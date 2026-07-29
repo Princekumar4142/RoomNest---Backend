@@ -19,7 +19,7 @@ const app = express();
 
 app.use(
   cors({
-    origin: process.env.CLIENT_URL || "http://localhost:5173",
+    origin: process.env.CLIENT_URL || "https://roomnest-backend-pnf5.onrender.com/api",
     credentials: true,
   })
 );
