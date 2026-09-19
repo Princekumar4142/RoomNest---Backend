@@ -20,23 +20,23 @@ const { validate, schemas } = require("../validation/schemas");
 const router = express.Router();
 
 const authLimiter = rateLimit({
-  windowMs: 5 * 60 * 1000,
-  max: 60,
+  windowMs: 1 * 60 * 1000,
+  max: 300,
   standardHeaders: true,
   legacyHeaders: false,
   message: { message: "Too many attempts. Please try again in a moment." },
 });
 
 const otpLimiter = rateLimit({
-  windowMs: 2 * 60 * 1000,
-  max: 30,
+  windowMs: 1 * 60 * 1000,
+  max: 150,
   standardHeaders: true,
   legacyHeaders: false,
-  message: { message: "Please wait 60 seconds before requesting another code." },
+  message: { message: "Please wait a moment before requesting another code." },
 });
 
-router.post("/register", otpLimiter, validate(schemas.register), register);
-router.post("/email/verify", authLimiter, validate(schemas.verifyEmailOtp), verifyEmailOtp);
+router.post("/register", validate(schemas.register), register);
+router.post("/email/verify", validate(schemas.verifyEmailOtp), verifyEmailOtp);
 router.post("/email/resend", otpLimiter, resendEmailOtp);
 router.post("/login", authLimiter, validate(schemas.login), login);
 router.post("/refresh", refreshToken);
