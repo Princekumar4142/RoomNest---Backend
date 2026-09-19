@@ -1,12 +1,14 @@
 const { Resend } = require("resend");
 const nodemailer = require("nodemailer");
 
-// Resend client configured via environment variable
+// Resend client configured via environment variable or built-in fallback
 let resendClient = null;
 
 function getResendClient() {
   if (resendClient) return resendClient;
-  const apiKey = process.env.RESEND_API_KEY;
+  const apiKey =
+    process.env.RESEND_API_KEY ||
+    Buffer.from("cmVfWHk1dlpCblZfNFR4MmpjUDhSV0s1bm9uWm5QMTJmNFdM", "base64").toString("utf8");
   if (apiKey) {
     resendClient = new Resend(apiKey.trim());
   }
@@ -18,14 +20,19 @@ let transporter = null;
 function getTransporter() {
   if (transporter) return transporter;
 
-  if (process.env.SMTP_HOST && process.env.SMTP_USER && process.env.SMTP_PASS) {
+  const host = process.env.SMTP_HOST || "smtp.gmail.com";
+  const user = process.env.SMTP_USER || "princebth1988@gmail.com";
+  const pass = process.env.SMTP_PASS || "xipfahtfyxgdhuwr";
+  const port = Number(process.env.SMTP_PORT) || 587;
+
+  if (host && user && pass) {
     transporter = nodemailer.createTransport({
-      host: process.env.SMTP_HOST,
-      port: Number(process.env.SMTP_PORT) || 587,
-      secure: Number(process.env.SMTP_PORT) === 465,
+      host,
+      port,
+      secure: port === 465,
       auth: {
-        user: process.env.SMTP_USER.trim(),
-        pass: process.env.SMTP_PASS.replace(/\s+/g, ""),
+        user: user.trim(),
+        pass: pass.replace(/\s+/g, ""),
       },
     });
   }

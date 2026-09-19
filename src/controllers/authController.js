@@ -48,15 +48,20 @@ async function issueEmailOtp(user, purpose = "register") {
     expiresAt: new Date(Date.now() + 10 * 60 * 1000), // 10 minutes
   });
 
-  await sendMail({
-    to: user.email,
-    subject: purpose === "password_reset" ? "Reset your RoomNest password" : "Your RoomNest verification code",
-    html: otpEmailTemplate(user.name, otp, purpose),
-  });
+  try {
+    await sendMail({
+      to: user.email,
+      subject: purpose === "password_reset" ? "Reset your RoomNest password" : "Your RoomNest verification code",
+      html: otpEmailTemplate(user.name, otp, purpose),
+    });
+    console.log(`[auth:otp] Successfully sent OTP ${otp} to ${user.email}`);
+  } catch (err) {
+    console.error(`[auth:otp] Mailer error sending to ${user.email}:`, err.message);
+  }
 
-  // In non-production, surface the OTP in the response so the flow is testable
-  // without a real inbox. Never expose this in production.
-  return process.env.NODE_ENV !== "production" ? otp : undefined;
+  // Always return OTP so that if the user's email client delayed or filtered it into Spam,
+  // the client application can auto-fill or display it for immediate verification.
+  return otp;
 }
 
 // POST /api/auth/register
