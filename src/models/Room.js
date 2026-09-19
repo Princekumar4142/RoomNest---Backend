@@ -107,6 +107,7 @@ const roomSchema = new mongoose.Schema(
     verificationBadges: [{ type: String }],
     verifiedDate: { type: Date },
     inspectedBy: { type: String, default: "" },
+    rejectionReason: { type: String, default: "" },
 
     isActive: { type: Boolean, default: true },
     isFlagged: { type: Boolean, default: false },

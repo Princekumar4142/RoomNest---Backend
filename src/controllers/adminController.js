@@ -36,7 +36,15 @@ async function approveRoom(req, res, next) {
   try {
     const room = await Room.findByIdAndUpdate(
       req.params.id,
-      { verificationStatus: "approved", isVerified: true, isFlagged: false },
+      {
+        verificationStatus: "approved",
+        isVerified: true,
+        isActive: true,
+        isFlagged: false,
+        verifiedDate: new Date(),
+        inspectedBy: req.user?.name || "Admin Physical Audit Team",
+        verificationBadges: ["Physical Audit Verified", "100% Genuine Host", "Geo-Tagged Location"],
+      },
       { new: true }
     );
     if (!room) return res.status(404).json({ message: "Room not found." });
@@ -45,7 +53,7 @@ async function approveRoom(req, res, next) {
     if (io) {
       io.to(`user:${room.owner}`).emit("notification", {
         type: "listing",
-        message: `Your listing "${room.title}" was approved and is now live.`,
+        message: `Your listing "${room.title}" was approved by Admin and is now live for students!`,
         roomId: room._id,
       });
     }
@@ -59,9 +67,15 @@ async function approveRoom(req, res, next) {
 // PATCH /api/admin/rooms/:id/reject
 async function rejectRoom(req, res, next) {
   try {
+    const { reason } = req.body || {};
     const room = await Room.findByIdAndUpdate(
       req.params.id,
-      { verificationStatus: "rejected", isVerified: false, isActive: false },
+      {
+        verificationStatus: "rejected",
+        isVerified: false,
+        isActive: false,
+        rejectionReason: reason || "Listing did not meet physical inspection standards or photo requirements.",
+      },
       { new: true }
     );
     if (!room) return res.status(404).json({ message: "Room not found." });
@@ -70,7 +84,7 @@ async function rejectRoom(req, res, next) {
     if (io) {
       io.to(`user:${room.owner}`).emit("notification", {
         type: "listing",
-        message: `Your listing "${room.title}" was not approved. Please review and resubmit.`,
+        message: `Your listing "${room.title}" was not approved by Admin. Please update details and resubmit.`,
         roomId: room._id,
       });
     }

@@ -186,10 +186,30 @@ async function getRoomById(req, res, next) {
   }
 }
 
-// POST /api/rooms  (owner only)
+// POST /api/rooms  (owner only - requires admin audit to go live)
 async function createRoom(req, res, next) {
   try {
-    const room = await Room.create({ ...req.body, owner: req.user._id });
+    const payload = { ...req.body };
+    delete payload.isVerified;
+    delete payload.verificationStatus;
+    delete payload.verificationBadges;
+
+    const room = await Room.create({
+      ...payload,
+      owner: req.user._id,
+      verificationStatus: "pending", // Always pending until Admin approves in /admin/dashboard
+      isVerified: false,
+    });
+
+    const io = req.app.get("io");
+    if (io) {
+      io.emit("admin:new_room_submitted", {
+        roomId: room._id,
+        title: room.title,
+        owner: req.user.name,
+      });
+    }
+
     res.status(201).json({ room });
   } catch (err) {
     next(err);
