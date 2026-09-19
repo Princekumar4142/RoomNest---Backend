@@ -102,13 +102,12 @@ async function register(req, res, next) {
       });
     }
 
-    const devOtp = await issueEmailOtp(user, "register");
+    await issueEmailOtp(user, "register");
 
     res.status(201).json({
       message: "Verification code sent to your email.",
       userId: user._id,
       email: user.email,
-      devOtp,
     });
   } catch (err) {
     next(err);
@@ -156,8 +155,8 @@ async function resendEmailOtp(req, res, next) {
     if (!user) return res.status(404).json({ message: "Account not found." });
     if (user.isEmailVerified) return res.status(400).json({ message: "This account is already verified." });
 
-    const devOtp = await issueEmailOtp(user, "register");
-    res.json({ message: "A new verification code has been sent.", devOtp });
+    await issueEmailOtp(user, "register");
+    res.json({ message: "A new verification code has been sent to your email." });
   } catch (err) {
     next(err);
   }
@@ -239,12 +238,11 @@ async function login(req, res, next) {
       return res.status(403).json({ message: "This account is currently suspended." });
     }
     if (!user.isEmailVerified) {
-      const devOtp = await issueEmailOtp(user, "register");
+      await issueEmailOtp(user, "register");
       return res.status(403).json({
         message: "Please verify your email first. We've sent you a new code.",
         requiresEmailVerification: true,
         userId: user._id,
-        devOtp,
       });
     }
 
@@ -266,7 +264,7 @@ async function requestOtp(req, res) {
   if (!phone) return res.status(400).json({ message: "Phone number is required." });
   // TODO: integrate real SMS provider. For now, simulate a fixed dev OTP.
   console.log(`[otp] dev OTP for ${phone}: 123456`);
-  res.json({ message: "OTP sent.", devOtp: process.env.NODE_ENV !== "production" ? "123456" : undefined });
+  res.json({ message: "OTP sent to your phone." });
 }
 
 // POST /api/auth/otp/verify
