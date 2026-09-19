@@ -20,19 +20,19 @@ const { validate, schemas } = require("../validation/schemas");
 const router = express.Router();
 
 const authLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000,
-  max: 20,
+  windowMs: 5 * 60 * 1000,
+  max: 60,
   standardHeaders: true,
   legacyHeaders: false,
-  message: { message: "Too many attempts. Please try again in a few minutes." },
+  message: { message: "Too many attempts. Please try again in a moment." },
 });
 
 const otpLimiter = rateLimit({
-  windowMs: 10 * 60 * 1000,
-  max: 5,
+  windowMs: 2 * 60 * 1000,
+  max: 30,
   standardHeaders: true,
   legacyHeaders: false,
-  message: { message: "Too many code requests. Please wait a few minutes before trying again." },
+  message: { message: "Please wait 60 seconds before requesting another code." },
 });
 
 router.post("/register", otpLimiter, validate(schemas.register), register);
