@@ -50,8 +50,8 @@ async function issueEmailOtp(user, purpose = "register") {
 
   await sendMail({
     to: user.email,
-    subject: "Your RoomNest verification code",
-    html: otpEmailTemplate(user.name, otp),
+    subject: purpose === "password_reset" ? "Reset your RoomNest password" : "Your RoomNest verification code",
+    html: otpEmailTemplate(user.name, otp, purpose),
   });
 
   // In non-production, surface the OTP in the response so the flow is testable

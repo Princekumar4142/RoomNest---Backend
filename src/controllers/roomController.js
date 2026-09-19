@@ -207,6 +207,30 @@ async function updateRoom(req, res, next) {
   }
 }
 
+// PATCH /api/rooms/:id/availability (beds or active toggle)
+async function updateRoomAvailability(req, res, next) {
+  try {
+    const room = await Room.findById(req.params.id);
+    if (!room) return res.status(404).json({ message: "Room not found." });
+
+    const isOwnerOfRoom = room.owner.toString() === req.user._id.toString();
+    if (!isOwnerOfRoom && req.user.role !== "admin") {
+      return res.status(403).json({ message: "You can only edit your own listings." });
+    }
+
+    if (req.body.availableBeds !== undefined) {
+      room.availableBeds = Math.max(0, Number(req.body.availableBeds));
+    }
+    if (req.body.isActive !== undefined) {
+      room.isActive = Boolean(req.body.isActive);
+    }
+    await room.save();
+    res.json({ room });
+  } catch (err) {
+    next(err);
+  }
+}
+
 // DELETE /api/rooms/:id
 async function deleteRoom(req, res, next) {
   try {
@@ -306,6 +330,7 @@ module.exports = {
   updateRoom,
   deleteRoom,
   getMyRooms,
+  updateRoomAvailability,
   getNearbyPlaces,
   getRentInsight,
 };

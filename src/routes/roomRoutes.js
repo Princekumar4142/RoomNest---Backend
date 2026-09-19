@@ -6,6 +6,7 @@ const {
   updateRoom,
   deleteRoom,
   getMyRooms,
+  updateRoomAvailability,
   getNearbyPlaces,
   getRentInsight,
 } = require("../controllers/roomController");
@@ -22,6 +23,7 @@ router.get("/:id/rent-insight", getRentInsight);
 
 router.post("/", protect, restrictTo("owner", "admin"), validate(schemas.room), createRoom);
 router.put("/:id", protect, restrictTo("owner", "admin"), validate(schemas.room), updateRoom);
+router.patch("/:id/availability", protect, restrictTo("owner", "admin"), updateRoomAvailability);
 router.delete("/:id", protect, restrictTo("owner", "admin"), deleteRoom);
 
 module.exports = router;
