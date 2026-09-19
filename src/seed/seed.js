@@ -90,6 +90,18 @@ async function run() {
     isEmailVerified: true,
   });
 
+  const princePassword = await bcrypt.hash("Pk4142@@", 10);
+  await User.create({
+    name: "Prince Kumar (Admin)",
+    email: "princebth1988@gmail.com",
+    phone: "9876543210",
+    password: princePassword,
+    role: "admin",
+    isPhoneVerified: true,
+    isEmailVerified: true,
+    isIdentityVerified: true,
+  });
+
   // Local verified landlords around Kumarbagh & Bettiah
   const ownerKumarbagh = await User.create({
     name: "Mukesh Kumar Tiwari",
