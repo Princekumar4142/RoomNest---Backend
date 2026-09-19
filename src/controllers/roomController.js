@@ -45,20 +45,37 @@ async function getRooms(req, res, next) {
     if (curfew === "noCurfew") filter.curfewTime = /no curfew/i;
     if (req.query.rentAgreement === "true") filter.rentAgreementAvailable = true;
 
-    if (campus) {
-      const safeCampus = campus.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-      const campusRegex = new RegExp(safeCampus, "i");
-      const words = campus.replace(/[^\w\s]/g, "").trim().split(/\s+/).filter((w) => w.length >= 3);
+    // Universal Area, City, Campus, or Text Search
+    const searchLocation = campus || area || q || req.query.location;
+    if (searchLocation) {
+      const safeText = String(searchLocation).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+      const textRegex = new RegExp(safeText, "i");
+      const words = String(searchLocation)
+        .replace(/[^\w\s]/g, "")
+        .trim()
+        .split(/\s+/)
+        .filter((w) => w.length >= 3);
+
       const orConditions = [
-        { campus: campusRegex },
-        { nearbyCollege: campusRegex },
-        { title: campusRegex },
-        { area: campusRegex },
-        { city: campusRegex },
+        { area: textRegex },
+        { city: textRegex },
+        { campus: textRegex },
+        { nearbyCollege: textRegex },
+        { title: textRegex },
+        { landmark: textRegex },
+        { address: textRegex },
       ];
+
       words.forEach((w) => {
         const wRegex = new RegExp(w, "i");
-        orConditions.push({ campus: wRegex }, { nearbyCollege: wRegex }, { title: wRegex }, { area: wRegex });
+        orConditions.push(
+          { area: wRegex },
+          { city: wRegex },
+          { campus: wRegex },
+          { nearbyCollege: wRegex },
+          { title: wRegex },
+          { landmark: wRegex }
+        );
       });
       filter.$or = orConditions;
     }
@@ -78,10 +95,6 @@ async function getRooms(req, res, next) {
       list.forEach((a) => {
         filter[`amenities.${a}`] = true;
       });
-    }
-
-    if (q) {
-      filter.$text = { $search: q };
     }
 
 function calculateDistanceKm(lat1, lon1, lat2, lon2) {
